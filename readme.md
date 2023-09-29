@@ -1,5 +1,13 @@
 # Nest-ApiG - Integration of NestJS with AWS Lambda and AWS CDK
 
+<p  align="center">
+    <a href="https://npmjs.com/nest-apig">
+        <img  src="https://img.shields.io/npm/v/nest-apig.svg"  alt="NPM Version"  />
+    </a>
+    <img  src="https://img.shields.io/npm/l/nest-apig.svg"  alt="Package License"  />
+    <img  src="https://img.shields.io/npm/dm/nest-apig.svg"  alt="NPM Downloads"  />
+</p>
+
 Nest-ApiG is a library that simplifies the integration of [NestJS](https://nestjs.com/) with AWS Lambda and makes your NestJS application compatible with the [AWS CDK](https://aws.amazon.com/cdk/). With this library, you can easily transform your NestJS application into a Lambda function and make it executable using AWS CDK. Nest-ApiG offers several features to streamline serverless application development, including:
 
 - Automatic creation of handlers for the API Gateway.
