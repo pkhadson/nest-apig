@@ -1,0 +1,29 @@
+{
+  "name": "nest-apig",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b -w"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@nestjs/swagger": "^7.1.12",
+    "@vendia/serverless-express": "^4.10.4",
+    "class-transformer": "^0.5.1",
+    "class-validator-jsonschema": "^5.0.0",
+    "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.122",
+    "@types/node": "^20.7.0"
+  },
+  "includes": [
+    "dist/**/*",
+    "package.json",
+    "package-lock.json"
+  ]
+}
