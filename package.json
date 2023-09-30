@@ -1,6 +1,6 @@
 {
-  "name": "@nest-cdk",
-  "version": "1.0.1",
+  "name": "nest-cdk",
+  "version": "0.0.1-rc.1",
   "description": "",
   "main": "dist/main.js",
   "scripts": {
@@ -13,8 +13,10 @@
   "dependencies": {
     "@nestjs/swagger": "^7.1.12",
     "@vendia/serverless-express": "^4.10.4",
+    "aws-cdk-lib": "^2.99.1",
     "class-transformer": "^0.5.1",
     "class-validator-jsonschema": "^5.0.0",
+    "constructs": "^10.2.70",
     "typescript": "^5.2.2"
   },
   "devDependencies": {

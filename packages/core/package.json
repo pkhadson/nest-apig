@@ -1,8 +1,9 @@
 {
   "name": "@nest-cdk/core",
-  "version": "1.0.0",
+  "version": "0.0.1-rc.4",
   "description": "",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
     "dev": "tsc -b -w"
@@ -11,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "exports": {
+    ".": "./dist/index.js",
     "./register": "./dist/register.js"
   },
   "typesVersions": {
@@ -19,5 +21,11 @@
         "dist/register.d.ts"
       ]
     }
+  },
+  "dependencies": {
+    "@nestjs/swagger": "^7.1.12",
+    "@vendia/serverless-express": "^4.10.4",
+    "aws-lambda": "^1.0.7",
+    "class-validator-jsonschema": "^5.0.0"
   }
 }
