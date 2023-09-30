@@ -1,0 +1,23 @@
+{
+  "name": "@nest-cdk/core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b -w"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "exports": {
+    "./register": "./dist/register.js"
+  },
+  "typesVersions": {
+    "*": {
+      "register": [
+        "dist/register.d.ts"
+      ]
+    }
+  }
+}
