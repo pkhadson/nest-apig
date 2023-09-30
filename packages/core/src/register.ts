@@ -45,8 +45,8 @@ export class NestStack extends Stack {
     this.distPath = path.join(
       props.distPath?.startsWith("/")
         ? props.distPath
-        : path.join(mainPath, props.distPath || "../dist"),
-      `apps/${this.projectName}`
+        : path.join(mainPath, props.distPath || "../dist/apps"),
+      `${this.projectName}`
     );
     this.api = props.api;
     this.fn = this.getFuction();
