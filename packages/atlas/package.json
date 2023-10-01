@@ -1,12 +1,13 @@
 {
   "name": "@nest-cdk/atlas",
-  "version": "1.0.0",
+  "version": "0.0.1-rc.0",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
-    "dev": "tsc -b -w"
+    "dev": "tsc -b -w",
+    "publish_package": "rm -rf ./tsconfig.tsbuildinfo && npm run build && npm publish --access public"
   },
   "keywords": [],
   "author": "",

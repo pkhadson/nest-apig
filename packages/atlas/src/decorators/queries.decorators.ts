@@ -20,10 +20,6 @@ interface IOpts {
   database?: string;
 }
 
-Reflect.set(globalThis, "nest-cdk-generate:atlas-queries", () => {
-  console.log("dd");
-});
-
 const genericAction = (action: string, opts: IOpts) => {
   let collection: any = opts.collection;
   if (typeof collection !== "string")
@@ -32,7 +28,6 @@ const genericAction = (action: string, opts: IOpts) => {
     throw new Error("Collection name is required");
 
   return function (target: any, ctx: any, descriptor: PropertyDescriptor) {
-    console.log(Object.keys(target));
     const originalMethod = descriptor.value;
 
     const methodResult = originalMethod() || {};
@@ -43,8 +38,6 @@ const genericAction = (action: string, opts: IOpts) => {
       action,
       collection,
     };
-
-    console.log(integration);
 
     return descriptor;
   };
