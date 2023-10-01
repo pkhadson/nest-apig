@@ -14,8 +14,8 @@
 
 - [ ] register
 - [ ] @OnAtlasEvents
-- [ ] @FindAll
-- [ ] @FindOne
-- [ ] @Insert
-- [ ] @Update
-- [ ] @Delete
+- [x] ~~_@FindAll_~~
+- [x] ~~_@FindOne_~~
+- [x] ~~_@Insert_~~
+- [x] ~~_@Update_~~
+- [x] ~~_@Delete_~~

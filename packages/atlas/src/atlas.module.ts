@@ -5,6 +5,7 @@ import { IAtlasOptions } from "./interface/atlas-options.interface";
 @Module({})
 export class AtlasModule {
   public static forRoot(options: IAtlasOptions): DynamicModule {
+    Reflect.set(globalThis, "nest-cdk:atlas-options", options);
     return {
       module: AtlasModule,
       providers: [
