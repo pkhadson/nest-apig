@@ -42,12 +42,9 @@ export class NestStack extends Stack {
 
     this.projectName = props.project;
     this.fakeLibs();
-    this.distPath = path.join(
-      props.distPath?.startsWith("/")
-        ? props.distPath
-        : path.join(mainPath, props.distPath || "../dist/apps"),
-      `${this.projectName}`
-    );
+    this.distPath =
+      props.distPath ||
+      path.join(path.join(mainPath, "../dist/apps", this.projectName));
     this.api = props.api;
     this.fn = this.getFuction();
     this.fnIntegraion = this.getFnIntergation();
@@ -184,7 +181,7 @@ export class NestStack extends Stack {
       "swagger-ui-dist/absolute-path.js",
       // "path-to-regexp",
       // "@nestjs/mapped-types",
-      // "class-transformer/storage",
+      "class-transformer/storage",
     ].forEach(makeFakeLib);
   }
 }

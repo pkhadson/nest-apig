@@ -19,5 +19,6 @@
     "strictPropertyInitialization": true,
     "stripInternal": false,
     "composite": false
-  }
+  },
+  "include": ["src/**/*.ts"]
 }

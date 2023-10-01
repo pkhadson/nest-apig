@@ -1,6 +1,6 @@
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { validationMetadatasToSchemas } from "class-validator-jsonschema";
-import fs from "node:fs";
+import * as fs from "node:fs";
 import * as path from "node:path";
 import { nestedValidation } from "./jsonschema/validators";
 
