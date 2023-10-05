@@ -1,7 +1,11 @@
-const register = () => {
-  console.log("oioioi");
+// import * as fs from "node:fs";
+// import * as path from "node:path";
 
-  return "sdsd";
+const register = (nestStack: any) => {
+  // const authPath = path.join(
+  //   nestStack.distPath,
+  //   "_generated/auth.json"
+  // );
 };
 
 export default register;

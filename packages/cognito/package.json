@@ -1,16 +1,19 @@
 {
   "name": "@nest-cdk/cognito",
-  "version": "1.0.0",
+  "version": "0.0.1-rc.2",
   "description": "",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
-    "dev": "tsc -b -w"
+    "dev": "tsc -b -w",
+    "publish_package": "rm -rf ./tsconfig.tsbuildinfo && npm run build && npm publish --access public"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "exports": {
+    ".": "./dist/index.js",
     "./register": "./dist/register.js"
   },
   "typesVersions": {
@@ -19,5 +22,8 @@
         "dist/register.d.ts"
       ]
     }
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.2.6"
   }
 }
