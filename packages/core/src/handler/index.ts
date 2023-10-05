@@ -12,6 +12,7 @@ async function bootstrap(app: any): Promise<Handler> {
 let app: any;
 
 export const getHandler = (_app: any) => {
+  Reflect.set(globalThis, "LAMBDA_MODE", true);
   if (process.env.GENERATE) {
     generate(_app);
     return {} as Handler;

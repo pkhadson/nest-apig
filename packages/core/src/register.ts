@@ -5,6 +5,8 @@ import {
 } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
 import { Stack, StackProps } from "aws-cdk-lib";
 import {
+  AuthorizationType,
+  CfnAuthorizer,
   LambdaIntegration,
   MethodOptions,
   Model,
@@ -24,7 +26,10 @@ interface INestStackProps extends StackProps {
   project: string;
   api: RestApi;
   distPath?: string;
+  authorizers?: IAuthMap;
 }
+
+type IAuthMap = Record<string, CfnAuthorizer>;
 
 export class NestStack extends Stack {
   projectName: string;
@@ -33,6 +38,7 @@ export class NestStack extends Stack {
   api: RestApi;
   fn: NodejsFunction;
   fnIntegraion: LambdaIntegration;
+  authorizers: IAuthMap;
   constructor(scope: Construct, id: string, props: INestStackProps) {
     super(scope, id, props);
 
@@ -48,9 +54,11 @@ export class NestStack extends Stack {
     this.api = props.api;
     this.fn = this.getFuction();
     this.fnIntegraion = this.getFnIntergation();
+    this.authorizers = props.authorizers || {};
 
     this.registerSchemas();
-    this.registerMethods();
+    const authMap = this.readAuthorizers();
+    this.registerMethods(authMap);
   }
 
   getFuction() {
@@ -99,15 +107,23 @@ export class NestStack extends Stack {
     );
   }
 
-  registerMethods() {
+  registerMethods(authMap: IAuthMap) {
     const methods: any = Object.entries(this.getMethods());
 
     for (let i = 0; i < methods.length; i++) {
       const [method, path] = methods[i][0].split(" ");
+      const methodName = methods[i][1].method;
       const bodyValidator: Model | undefined = methods[i][1].bodyValidator;
       const resource = this.getResource(path);
 
       const methodOptions: Mutable<MethodOptions> = {};
+
+      const auth = authMap[methodName];
+
+      if (auth) {
+        methodOptions.authorizer = { authorizerId: auth.ref };
+        methodOptions.authorizationType = AuthorizationType.COGNITO;
+      }
 
       if (bodyValidator) {
         methodOptions.requestModels = {
@@ -122,6 +138,16 @@ export class NestStack extends Stack {
     }
   }
 
+  readAuthorizers(): IAuthMap {
+    const authorizersPath = path.join(this.distPath, "_generated/auth.json");
+    if (!fs.existsSync(authorizersPath)) return {};
+    return Object.fromEntries(
+      Object.entries(JSON.parse(fs.readFileSync(authorizersPath, "utf-8"))).map(
+        ([key, authName]) => [key, this.authorizers[`${authName}`]]
+      )
+    );
+  }
+
   getMethods() {
     const swaggerPath = path.join(this.distPath, "_generated/swagger.json");
     const swagger = JSON.parse(
@@ -134,7 +160,9 @@ export class NestStack extends Stack {
 
         const requestBody = methods[method]?.requestBody as RequestBodyObject;
 
-        const value: any = {};
+        const value: any = {
+          method: methods[method]?.operationId,
+        };
 
         if (requestBody) {
           const [bodyContent] = Object.values(requestBody.content || {});
