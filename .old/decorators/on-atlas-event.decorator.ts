@@ -13,7 +13,6 @@ export const OnAtlasEvent =
       `service:${target.constructor.name}`,
       target.constructor
     );
-    console.log("seta service", `service:${target.constructor.name}`);
     Reflect.set(globalThis, "atlasEvents", atlasEvents);
     return descriptor;
   };
