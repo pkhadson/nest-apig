@@ -1,6 +1,6 @@
 {
   "name": "@nest-cdk/core",
-  "version": "0.0.2-rc.3",
+  "version": "0.0.2-rc.5",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -47,7 +47,7 @@ export class NestStack extends Stack {
       throw new Error("No main module path found");
 
     this.projectName = props.project;
-    this.fakeLibs();
+    // this.fakeLibs();
     this.distPath =
       props.distPath ||
       path.join(path.join(mainPath, "../dist/apps", this.projectName));
@@ -62,7 +62,7 @@ export class NestStack extends Stack {
   }
 
   getFuction() {
-    this.fakeLibs();
+    // this.fakeLibs();
     return new NodejsFunction(this, `${titleCase(this.projectName)}Function`, {
       runtime: Runtime.NODEJS_18_X,
       entry: path.join(this.distPath, `main.js`),
@@ -85,13 +85,17 @@ export class NestStack extends Stack {
     Object.entries(schema).forEach(([key, schema]) => {
       schema = this.schemaModifier(schema);
 
-      const model = new Model(this, `${titleCase(this.projectName)}${key}`, {
-        restApi: this.api,
-        contentType: "application/json",
-        description: "To validate the request body",
-        modelName: `${titleCase(this.projectName)}${key}`,
-        schema,
-      });
+      const model = new Model(
+        this.api,
+        `${titleCase(this.projectName)}${key}`,
+        {
+          restApi: this.api,
+          contentType: "application/json",
+          description: "To validate the request body",
+          modelName: `${titleCase(this.projectName)}${key}`,
+          schema,
+        }
+      );
       this.models.set(key, model);
     });
   }
@@ -194,20 +198,20 @@ export class NestStack extends Stack {
     return currentResource;
   }
 
-  fakeLibs() {
-    [
-      "@nestjs/microservices",
-      "@nestjs/websockets",
-      "@nestjs/microservices/microservices-module",
-      "@nestjs/websockets/socket-module",
-      "lodash.groupby",
-      "lodash.merge",
-      "js-yaml",
-      "swagger-ui-dist",
-      "swagger-ui-dist/absolute-path.js",
-      // "path-to-regexp",
-      // "@nestjs/mapped-types",
-      "class-transformer/storage",
-    ].forEach(makeFakeLib);
-  }
+  // fakeLibs() {
+  //   [
+  //     "@nestjs/microservices",
+  //     "@nestjs/websockets",
+  //     "@nestjs/microservices/microservices-module",
+  //     "@nestjs/websockets/socket-module",
+  //     "lodash.groupby",
+  //     "lodash.merge",
+  //     "js-yaml",
+  //     "swagger-ui-dist",
+  //     "swagger-ui-dist/absolute-path.js",
+  //     // "path-to-regexp",
+  //     // "@nestjs/mapped-types",
+  //     "class-transformer/storage",
+  //   ].forEach(makeFakeLib);
+  // }
 }

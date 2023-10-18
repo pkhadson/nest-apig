@@ -53,12 +53,17 @@ const generate = async (app: any) => {
     key.toString().startsWith("nest-cdk:")
   );
 
-  keys.forEach((key) => {
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
     const file = key.toString().replace("nest-cdk:", "");
     const filePath = path.resolve(`${mainPath}/_generated/${file}.json`);
     const data = Reflect.get(globalThis, key);
     fs.writeFileSync(filePath, JSON.stringify(data));
-  });
+  }
+
+  setTimeout(() => {
+    process.exit(0);
+  }, 500);
 };
 
 export default generate;
