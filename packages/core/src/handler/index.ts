@@ -1,5 +1,5 @@
 import serverlessExpress from "@vendia/serverless-express";
-import type { Callback, Context, Handler } from "aws-lambda";
+import type { Callback, Context, Handler, SQSEvent } from "aws-lambda";
 import generate from "../generate";
 
 let server: Handler;
@@ -25,9 +25,38 @@ export const getHandler = (_app: any) => {
   ) => {
     let res: any;
     if (!app) app = await _app;
+    app.enableCors();
     if (event.service && event.method) {
       const service = Reflect.get(globalThis, `service:${event.service}`);
       res = await app.get(service)[event.method](event.detail);
+    } else if (event.Records) {
+      await Promise.all(
+        event.Records.map(async (record: any) => {
+          if (record.eventSource === "aws:sqs") {
+            const SQSRecord = record as SQSEvent["Records"][0];
+            const [service, method] = SQSRecord.eventSourceARN
+              .split(":")
+              .pop()
+              ?.split("-") as [string, string];
+
+            try {
+              const serviceInstance = Reflect.get(
+                globalThis,
+                `service:${service}`
+              );
+              const body = JSON.parse(SQSRecord.body);
+              try {
+                body.Message = JSON.parse(body.Message);
+              } catch {
+                console.log("NO JSON MESSAGE");
+              }
+              res = await app.get(serviceInstance)[method](body.Message, body);
+            } catch (err) {
+              console.error(err);
+            }
+          }
+        })
+      );
     } else {
       server = server ?? (await bootstrap(app));
       res = server(event, context, callback);

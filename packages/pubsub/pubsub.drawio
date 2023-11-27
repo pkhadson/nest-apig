@@ -1,0 +1,58 @@
+<mxfile host="65bd71144e">
+    <diagram id="XFx6qq-6rUmsS6mtgWHY" name="Page-1">
+        <mxGraphModel dx="1938" dy="1138" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="17" value="" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=#18141D;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="70" y="60" width="600" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="" style="group" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="80" y="70" width="180" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="@On" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="8">
+                    <mxGeometry width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="That decorator will create an Queue with name composed by {ServiceName}_{MethodName}. And That queue will listen events emitted by the Sns declared in ModuleRegistraion. And that decorator should set in matadata the serviceName, methodName and eventPattern" style="rounded=0;whiteSpace=wrap;html=1;fontSize=10;align=left;spacingLeft=4;spacingRight=4;verticalAlign=top;" vertex="1" parent="8">
+                    <mxGeometry y="30" width="180" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="" style="group" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="280" y="70" width="180" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="PubSubModule" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="9">
+                    <mxGeometry width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="That module will receive only one, such as: snsArn. And the module should write that information in Metadata." style="rounded=0;whiteSpace=wrap;html=1;fontSize=10;align=left;spacingLeft=4;spacingRight=4;verticalAlign=top;" vertex="1" parent="9">
+                    <mxGeometry y="30" width="180" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="" style="group" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="480" y="70" width="180" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="PubSubService" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="12">
+                    <mxGeometry width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="That service should contains only one method, that is emit. That method will receives two params: eventPattern and data" style="rounded=0;whiteSpace=wrap;html=1;fontSize=10;align=left;spacingLeft=4;spacingRight=4;verticalAlign=top;" vertex="1" parent="12">
+                    <mxGeometry y="30" width="180" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" style="edgeStyle=none;html=1;fontSize=10;" edge="1" parent="1" source="19" target="22">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="&lt;pre&gt;pubsub.json&lt;/pre&gt;&lt;pre&gt;{&lt;br&gt;  &quot;events&quot;: [&lt;br&gt;    {&lt;/pre&gt;&lt;pre&gt;      &quot;service&quot;: &quot;...&quot;,&lt;/pre&gt;&lt;pre&gt;      &quot;method&quot;: &quot;...&quot;,&lt;/pre&gt;&lt;pre&gt;      &quot;event&quot;: &quot;...&quot;&lt;/pre&gt;&lt;pre&gt;    }&lt;br&gt;  ]&lt;br&gt;}&lt;/pre&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="90" y="270" width="160" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" style="edgeStyle=none;html=1;entryX=0.505;entryY=-0.013;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=10;" edge="1" parent="1" source="3" target="19">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" style="edgeStyle=none;html=1;fontSize=10;" edge="1" parent="1" source="22" target="23">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="Each row in events[x] will be converted to an Aws Queue" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=#18141D;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="90" y="490" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="And refered to SNS" style="rounded=0;whiteSpace=wrap;html=1;labelBackgroundColor=#18141D;fontSize=10;" vertex="1" parent="1">
+                    <mxGeometry x="295" y="490" width="150" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

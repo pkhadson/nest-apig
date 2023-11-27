@@ -10,6 +10,7 @@ import {
   LambdaIntegration,
   MethodOptions,
   Model,
+  RequestValidator,
   Resource,
   RestApi,
 } from "aws-cdk-lib/aws-apigateway";
@@ -21,15 +22,20 @@ import * as path from "node:path";
 import { makeFakeLib } from "./fake-lib";
 import Mutable from "./interfaces/mutable.interface";
 import titleCase from "./utils/title-case.util";
+import { Rule, RuleTargetInput, Schedule } from "aws-cdk-lib/aws-events";
+import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 
 interface INestStackProps extends StackProps {
   project: string;
   api: RestApi;
   distPath?: string;
   authorizers?: IAuthMap;
+  env?: Record<string, string>;
 }
 
 type IAuthMap = Record<string, CfnAuthorizer>;
+
+let bodyValidator: RequestValidator;
 
 export class NestStack extends Stack {
   projectName: string;
@@ -39,6 +45,7 @@ export class NestStack extends Stack {
   fn: NodejsFunction;
   fnIntegraion: LambdaIntegration;
   authorizers: IAuthMap;
+  env: Record<string, string> = {};
   constructor(scope: Construct, id: string, props: INestStackProps) {
     super(scope, id, props);
 
@@ -52,6 +59,7 @@ export class NestStack extends Stack {
       props.distPath ||
       path.join(path.join(mainPath, "../dist/apps", this.projectName));
     this.api = props.api;
+    this.env = props.env || {};
     this.fn = this.getFuction();
     this.fnIntegraion = this.getFnIntergation();
     this.authorizers = props.authorizers || {};
@@ -68,6 +76,7 @@ export class NestStack extends Stack {
       entry: path.join(this.distPath, `main.js`),
       handler: "handler",
       memorySize: 512,
+      environment: this.env,
     });
   }
 
@@ -133,10 +142,11 @@ export class NestStack extends Stack {
         methodOptions.requestModels = {
           "application/json": bodyValidator,
         };
+        methodOptions.requestValidator = this.getBodyValidator();
       }
-      methodOptions.requestValidatorOptions = {
-        validateRequestBody: true,
-      };
+      // methodOptions.requestValidatorOptions = {
+      //   validateRequestBody: true,
+      // };
 
       resource.addMethod(method, this.fnIntegraion, methodOptions);
     }
@@ -196,6 +206,39 @@ export class NestStack extends Stack {
     }
 
     return currentResource;
+  }
+
+  getBodyValidator(): RequestValidator {
+    if (!bodyValidator)
+      bodyValidator = new RequestValidator(this.api, "body-validator", {
+        restApi: this.api,
+        requestValidatorName: "body-validator",
+        validateRequestBody: true,
+      });
+
+    return bodyValidator;
+  }
+
+  registerCron() {
+    const file = path.join(this.distPath, "_generated/cron.json");
+    if (!fs.existsSync(file)) return;
+    const cron = JSON.parse(fs.readFileSync(file, "utf-8")) || [];
+
+    for (let i = 0; i < cron.length; i++) {
+      const row = cron[i];
+      const rule = new Rule(this, `Rule${row.service}${row.method}`, {
+        schedule: Schedule.cron(row.rule),
+      });
+
+      rule.addTarget(
+        new LambdaFunction(this.fn, {
+          event: RuleTargetInput.fromObject({
+            service: row.service,
+            method: row.method,
+          }),
+        })
+      );
+    }
   }
 
   // fakeLibs() {
