@@ -1,8 +1,8 @@
-## Getting Started with Nest CDK
+# Getting Started with Nest CDK
 
 Welcome to the Nest CDK library! This guide will help you get started with the library and walk you through the steps of setting up your application.
 
-### 1. Install Nest CDK
+## 1. Install Nest CDK
 
 To install the Nest CDK library, use one of the following package managers:
 
@@ -17,12 +17,12 @@ npm i @nest-cdk/core
 ```
 
 ```shell [pnpm]
-pnpm i @nest-cdk/core
+pnpm add @nest-cdk/core
 ```
 
 :::
 
-### 2. Create Your CDK Application Infrastructure
+## 2. Create Your CDK Application Infrastructure
 
 Ensure you have an existing AWS CDK application set up. If not, create one using the following steps:
 
@@ -38,20 +38,23 @@ const api = new RestApi(app, "MyApi");
 // ... (add more infrastructure components as needed)
 ```
 
-### 3. Use Nest Application Stack
+## 3. Use Nest Application Stack
 
 Integrate Nest CDK into your AWS CDK application by adding the NestApplicationStack:
 
 ```typescript
-import { NestStack } from "@nest-cdk/core/register";
+import { defineConfig } from "@nest-cdk/core/register";
+import * as cdk from "aws-cdk-lib";
 
-const nest = new NestStack(this, "NestApplication", {
-  project: "nest-application", // Specify the project name (for monorepo)
-  api: api, // Provide the RestApi CDK instance
+const app = new cdk.App();
+
+defineConfig({
+  app,
+  name: "ProjectName",
 });
 ```
 
-### 4. Configure main.ts for AWS Lambda Integration
+## 4. Configure main.ts for AWS Lambda Integration
 
 Adjustments include setting up a global handler and checking the environment to determine whether the application is running in Lambda mode.
 
@@ -77,7 +80,7 @@ export const handler: Handler = getHandler(_app);
 global["handler"] = handler;
 ```
 
-### 5. CDK CLI Commands
+## 5. CDK CLI Commands
 
 Use the AWS CDK CLI to synthesize, bootstrap, and build your project:
 

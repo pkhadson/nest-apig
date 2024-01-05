@@ -8,7 +8,15 @@ Nest CDK's **PubSub** feature allows you to seamlessly implement the Publish-Sub
 
 Before using the PubSub feature, create an SNS (Simple Notification Service) topic in your AWS account. Save the ARN (Amazon Resource Name) string of the topic, as it will be used in the configuration.
 
-### 2. Import PubSubModule in Your App Module
+// isntall @aws-sdk/client-sns
+
+### 2. Install packages:
+
+```shell
+npm install @aws-sdk/client-sns @nest-cdk/pubsub --save-dev
+```
+
+### 3. Import PubSubModule in Your App Module and in yout CDK code
 
 In your NestJS `AppModule`, import the `PubSubModule` and configure it with the SNS ARN:
 
@@ -28,7 +36,21 @@ import { Module } from "@nestjs/common";
 export class AppModule {}
 ```
 
-### 3. Import PubSubService in Your Service
+```typescript
+import { defineConfig } from "@nest-cdk/core/register";
+import PubSubPlugin from "@nest-cdk/pubsub/register";
+import * as cdk from "aws-cdk-lib";
+
+const app = new cdk.App();
+
+defineConfig({
+  app,
+  name: "Pubsub",
+  plugins: [new PubSubPlugin()],
+});
+```
+
+### 4. Import PubSubService in Your Service
 
 Inject the `PubSubService` into your service for easy event emission:
 
@@ -44,7 +66,7 @@ export class AppService {
 }
 ```
 
-### 4. Register a Listener for Your Event
+### 5. Register a Listener for Your Event
 
 Use the `@On` decorator to register a listener for a specific event in your service:
 
@@ -63,7 +85,7 @@ export class AppService {
 }
 ```
 
-### 5. Emit an Event
+### 6. Emit an Event
 
 Use the `PubSubService` to emit an event:
 
