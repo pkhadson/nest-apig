@@ -48,4 +48,10 @@ const register = (nestStack: any) => {
   }
 };
 
-export default register;
+class PubSubPlugin {
+  register(nestStack: any) {
+    register(nestStack);
+  }
+}
+
+export default PubSubPlugin;
