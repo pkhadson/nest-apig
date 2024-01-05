@@ -48,7 +48,7 @@ export const getHandler = (_app: any) => {
               try {
                 body.Message = JSON.parse(body.Message);
               } catch {
-                console.log("NO JSON MESSAGE");
+                console.info("NO JSON MESSAGE");
               }
               res = await app.get(serviceInstance)[method](body.Message, body);
             } catch (err) {
@@ -57,6 +57,15 @@ export const getHandler = (_app: any) => {
           }
         })
       );
+    } else if (event?.requestContext?.routeKey) {
+      const wsData: any[] = Reflect.get(globalThis, `nest-cdk:ws`) || [];
+      const actionRow = wsData.find(
+        (a) => a.action === event?.requestContext?.routeKey
+      );
+      const service = Reflect.get(globalThis, `service:${actionRow.service}`);
+      res = await app.get(service)[actionRow.method](JSON.parse(event.body));
+      if (typeof res !== "object") res = {};
+      if (!res.statusCode) res.statusCode = 200;
     } else {
       server = server ?? (await bootstrap(app));
       res = server(event, context, callback);

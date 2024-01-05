@@ -1,6 +1,6 @@
 {
   "name": "@nest-cdk/core",
-  "version": "0.0.2-rc.12",
+  "version": "0.0.2-rc.20",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,21 +10,30 @@
     "dev": "tsc -b -w",
     "publish_package": "rm -rf ./tsconfig.tsbuildinfo && npm run build && npm publish --access public"
   },
+  "bin": {
+    "nest-cdk": "./dist/bin/nest-cdk.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "exports": {
     ".": "./dist/index.js",
-    "./register": "./dist/register.js"
+    "./register": "./dist/register.js",
+    "./build": "./dist/build.js"
   },
   "typesVersions": {
     "*": {
       "register": [
         "dist/register.d.ts"
+      ],
+      "build": [
+        "dist/build.d.ts"
       ]
     }
   },
   "dependencies": {
+    "@nest-cdk/build": "0.0.0-rc.1",
+    "@nestjs/platform-express": "^10.2.10",
     "@nestjs/swagger": "^7.1.12",
     "@vendia/serverless-express": "^4.10.4",
     "aws-lambda": "^1.0.7",

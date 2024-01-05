@@ -1,260 +1,126 @@
-import { OpenAPIObject } from "@nestjs/swagger";
+import type { StackProps } from "aws-cdk-lib";
+import { Stack } from "aws-cdk-lib";
 import {
-  ReferenceObject,
-  RequestBodyObject,
-} from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
-import { Stack, StackProps } from "aws-cdk-lib";
-import {
-  AuthorizationType,
   CfnAuthorizer,
-  LambdaIntegration,
-  MethodOptions,
-  Model,
-  RequestValidator,
-  Resource,
+  CfnAuthorizerProps,
   RestApi,
 } from "aws-cdk-lib/aws-apigateway";
-import { Runtime } from "aws-cdk-lib/aws-lambda";
-import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { Construct } from "constructs";
-import * as fs from "node:fs";
+import { Build } from "@nest-cdk/build";
 import * as path from "node:path";
-import { makeFakeLib } from "./fake-lib";
-import Mutable from "./interfaces/mutable.interface";
+import { NestAppStack } from "./nest.stack";
+export * from "./nest.stack";
 import titleCase from "./utils/title-case.util";
-import { Rule, RuleTargetInput, Schedule } from "aws-cdk-lib/aws-events";
-import { LambdaFunction } from "aws-cdk-lib/aws-events-targets";
 
-interface INestStackProps extends StackProps {
-  project: string;
-  api: RestApi;
-  distPath?: string;
-  authorizers?: IAuthMap;
-  env?: Record<string, string>;
+interface INestCdkConfig {
+  app: any;
+  restApi?: false | RestApi;
+  name?: string;
+  props?: StackProps;
+  rootPath?: string;
+  plugins?: any[];
+  env?: any;
+  authorizers?: Record<string, Exclude<CfnAuthorizerProps, "restApiId">>;
 }
 
-type IAuthMap = Record<string, CfnAuthorizer>;
+export class NestCdkStack extends Stack {
+  api?: RestApi;
+  authorizers: Record<string, CfnAuthorizer> = {};
+  constructor(scope: Construct, id: string, private props: INestCdkConfig) {
+    super(scope, id, props.props);
 
-let bodyValidator: RequestValidator;
+    // console.log("process.mainModule?.path", process.mainModule?.path);
 
-export class NestStack extends Stack {
-  projectName: string;
-  distPath: string;
-  models: Map<string, Model> = new Map();
-  api: RestApi;
-  fn: NodejsFunction;
-  fnIntegraion: LambdaIntegration;
-  authorizers: IAuthMap;
-  env: Record<string, string> = {};
-  constructor(scope: Construct, id: string, props: INestStackProps) {
-    super(scope, id, props);
-
-    const mainPath = process.mainModule?.path;
-    if (!mainPath || !process.mainModule?.filename)
-      throw new Error("No main module path found");
-
-    this.projectName = props.project;
-    // this.fakeLibs();
-    this.distPath =
-      props.distPath ||
-      path.join(path.join(mainPath, "../dist/apps", this.projectName));
-    this.api = props.api;
-    this.env = props.env || {};
-    this.fn = this.getFuction();
-    this.fnIntegraion = this.getFnIntergation();
-    this.authorizers = props.authorizers || {};
-
-    this.registerSchemas();
-    const authMap = this.readAuthorizers();
-    this.registerMethods(authMap);
+    //     new NestStack(this, 'NestApplication', {
+    //   project: 'nest-application',
+    //   distPath: 'dist',
+    //   api: api,
+    // });
   }
 
-  getFuction() {
-    // this.fakeLibs();
-    return new NodejsFunction(this, `${titleCase(this.projectName)}Function`, {
-      runtime: Runtime.NODEJS_18_X,
-      entry: path.join(this.distPath, `main.js`),
-      handler: "handler",
-      memorySize: 512,
-      environment: this.env,
+  getApi() {
+    if (this.api) return this.api;
+    if (this.props.restApi === false) return;
+    if (this.props.restApi) return this.props.restApi!;
+    this.api = new RestApi(this, "Api");
+    return this.api!;
+  }
+
+  getAuthorizer(name: string) {
+    if (this.authorizers[name]) return this.authorizers[name];
+    if (!this.props.authorizers![name])
+      throw new Error(`No authorizer found with name ${name}`);
+
+    const api = this.getApi();
+    if (!api) throw new Error("No api found");
+
+    const authorizer = new CfnAuthorizer(this, name, {
+      ...this.props.authorizers![name],
+      restApiId: api.restApiId,
     });
+    this.authorizers[name] = authorizer;
+    return authorizer;
   }
 
-  getFnIntergation() {
-    return new LambdaIntegration(this.fn);
+  getAuthorizers() {
+    const authorizers = Object.keys(this.props.authorizers || {});
+    for (let i = 0; i < authorizers.length; i++) {
+      this.getAuthorizer(authorizers[i]);
+    }
+    return this.authorizers;
   }
 
-  registerSchemas() {
-    const schemaPath = path.join(this.distPath, "_generated/json-schema.json");
-    const schema = JSON.parse(fs.readFileSync(schemaPath, "utf-8")) as Record<
-      string,
-      Object
-    >;
+  async init() {
+    const rootPath = path.join(
+      process.mainModule?.path || "",
+      this.props.rootPath || ".."
+    );
 
-    Object.entries(schema).forEach(([key, schema]) => {
-      schema = this.schemaModifier(schema);
-
-      const model = new Model(
-        this.api,
-        `${titleCase(this.projectName)}${key}`,
-        {
-          restApi: this.api,
-          contentType: "application/json",
-          description: "To validate the request body",
-          modelName: `${titleCase(this.projectName)}${key}`,
-          schema,
-        }
-      );
-      this.models.set(key, model);
+    const build = new Build({
+      path: rootPath,
     });
-  }
 
-  schemaModifier(schema: Object) {
-    return JSON.parse(
-      JSON.stringify(schema).replace(
-        /\$\{PREFIX\:\:SCHEMA\}/g,
-        `https://apigateway.amazonaws.com/restapis/${
-          this.api.restApiId
-        }/models/${titleCase(this.projectName)}`
-      )
-    );
-  }
+    if (!process.env.IGNORE_BUILD) await build.run();
 
-  registerMethods(authMap: IAuthMap) {
-    const methods: any = Object.entries(this.getMethods());
+    this.getAuthorizers();
 
-    for (let i = 0; i < methods.length; i++) {
-      const [method, path] = methods[i][0].split(" ");
-      const methodName = methods[i][1].method;
-      const bodyValidator: Model | undefined = methods[i][1].bodyValidator;
-      const resource = this.getResource(path);
+    const stacks: NestAppStack[] = [];
 
-      const methodOptions: Mutable<MethodOptions> = {};
-
-      const auth = authMap[methodName];
-
-      if (auth) {
-        methodOptions.authorizer = { authorizerId: auth.ref };
-        methodOptions.authorizationType = AuthorizationType.COGNITO;
+    if (build.isMonorepo) {
+      const projects = build.projectNames;
+      for (const project of projects) {
+        stacks.push(
+          new NestAppStack(this, `${titleCase(project)}Nest`, {
+            api: this.getApi(),
+            project,
+            distPath: path.join(rootPath, "dist/apps", project),
+            env: this.props.env,
+            authorizers: this.authorizers,
+          })
+        );
       }
-
-      if (bodyValidator) {
-        methodOptions.requestModels = {
-          "application/json": bodyValidator,
-        };
-        methodOptions.requestValidator = this.getBodyValidator();
-      }
-      // methodOptions.requestValidatorOptions = {
-      //   validateRequestBody: true,
-      // };
-
-      resource.addMethod(method, this.fnIntegraion, methodOptions);
-    }
-  }
-
-  readAuthorizers(): IAuthMap {
-    const authorizersPath = path.join(this.distPath, "_generated/auth.json");
-    if (!fs.existsSync(authorizersPath)) return {};
-    return Object.fromEntries(
-      Object.entries(JSON.parse(fs.readFileSync(authorizersPath, "utf-8"))).map(
-        ([key, authName]) => [key, this.authorizers[`${authName}`]]
-      )
-    );
-  }
-
-  getMethods() {
-    const swaggerPath = path.join(this.distPath, "_generated/swagger.json");
-    const swagger = JSON.parse(
-      fs.readFileSync(swaggerPath, "utf-8")
-    ) as OpenAPIObject;
-    return Object.entries(swagger.paths).reduce((response, [path, methods]) => {
-      const methodNames = Object.keys(methods);
-      for (let i = 0; i < methodNames.length; i++) {
-        const method = methodNames[i] as "get";
-
-        const requestBody = methods[method]?.requestBody as RequestBodyObject;
-
-        const value: any = {
-          method: methods[method]?.operationId,
-        };
-
-        if (requestBody) {
-          const [bodyContent] = Object.values(requestBody.content || {});
-          const schema = bodyContent?.schema as ReferenceObject;
-          if (schema && schema.$ref)
-            value.bodyValidator = this.models.get(
-              schema.$ref.split("/").pop()!
-            );
-        }
-
-        response[`${method.toUpperCase()} ${path}`] = value;
-      }
-      return response;
-    }, {} as Record<string, any>);
-  }
-
-  getResource(path: string, rootResource?: Resource) {
-    if (!rootResource) rootResource = this.api.root as Resource;
-
-    const parts = path.split("/").filter((a) => a != "");
-    let currentResource: Resource = rootResource;
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i];
-      if (!part) continue;
-      const existingResource = currentResource.getResource(part) as Resource;
-      currentResource = existingResource || currentResource.addResource(part);
-    }
-
-    return currentResource;
-  }
-
-  getBodyValidator(): RequestValidator {
-    if (!bodyValidator)
-      bodyValidator = new RequestValidator(this.api, "body-validator", {
-        restApi: this.api,
-        requestValidatorName: "body-validator",
-        validateRequestBody: true,
-      });
-
-    return bodyValidator;
-  }
-
-  registerCron() {
-    const file = path.join(this.distPath, "_generated/cron.json");
-    if (!fs.existsSync(file)) return;
-    const cron = JSON.parse(fs.readFileSync(file, "utf-8")) || [];
-
-    for (let i = 0; i < cron.length; i++) {
-      const row = cron[i];
-      const rule = new Rule(this, `Rule${row.service}${row.method}`, {
-        schedule: Schedule.cron(row.rule),
-      });
-
-      rule.addTarget(
-        new LambdaFunction(this.fn, {
-          event: RuleTargetInput.fromObject({
-            service: row.service,
-            method: row.method,
-          }),
+    } else {
+      stacks.push(
+        new NestAppStack(this, "NestApplication", {
+          api: this.getApi(),
+          project: "nest-application",
+          distPath: path.join(rootPath, "dist"),
+          env: this.props.env,
+          authorizers: this.authorizers,
         })
       );
     }
-  }
 
-  // fakeLibs() {
-  //   [
-  //     "@nestjs/microservices",
-  //     "@nestjs/websockets",
-  //     "@nestjs/microservices/microservices-module",
-  //     "@nestjs/websockets/socket-module",
-  //     "lodash.groupby",
-  //     "lodash.merge",
-  //     "js-yaml",
-  //     "swagger-ui-dist",
-  //     "swagger-ui-dist/absolute-path.js",
-  //     // "path-to-regexp",
-  //     // "@nestjs/mapped-types",
-  //     "class-transformer/storage",
-  //   ].forEach(makeFakeLib);
-  // }
+    this.props.plugins?.forEach((plugin) => {
+      stacks.forEach((stack) => {
+        plugin.register(stack);
+      });
+    });
+
+    return stacks;
+  }
 }
+
+export const defineConfig = (opts: INestCdkConfig) => {
+  return new NestCdkStack(opts.app, opts.name || "Nest", opts).init();
+};

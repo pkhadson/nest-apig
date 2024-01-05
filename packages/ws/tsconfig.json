@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "noEmitOnError": true,
     "target": "es2022",
     "module": "CommonJS",
     "rootDir": "./src",
@@ -20,6 +19,5 @@
     "strictPropertyInitialization": true,
     "stripInternal": false,
     "composite": false
-  },
-  "include": ["src/**/*.ts"]
+  }
 }
