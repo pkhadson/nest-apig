@@ -1,0 +1,21 @@
+{
+  "name": "@nest-cdk/cli",
+  "version": "0.0.0-rc.8",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "private": false,
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b -w",
+    "publish_package": "rm -rf ./tsconfig.tsbuildinfo && npm run build && npm publish --access public"
+  },
+  "bin": {
+    "nest-cdk": "./dist/bin/nest-cdk.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {}
+}
