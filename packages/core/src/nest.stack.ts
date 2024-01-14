@@ -10,6 +10,7 @@ import {
   LambdaIntegration,
   MethodOptions,
   Model,
+  RequestAuthorizer,
   RequestValidator,
   Resource,
   RestApi,
@@ -31,9 +32,10 @@ interface INestStackProps extends StackProps {
   distPath?: string;
   authorizers?: IAuthMap;
   env?: Record<string, string>;
+  stage: string;
 }
 
-type IAuthMap = Record<string, CfnAuthorizer>;
+type IAuthMap = Record<string, CfnAuthorizer | RequestAuthorizer>;
 
 let bodyValidator: RequestValidator;
 
@@ -46,7 +48,7 @@ export class NestAppStack extends Stack {
   fnIntegraion: LambdaIntegration;
   authorizers: IAuthMap;
   env: Record<string, string> = {};
-  constructor(scope: Construct, id: string, props: INestStackProps) {
+  constructor(scope: Construct, id: string, private props: INestStackProps) {
     super(scope, id, props);
 
     const mainPath = process.mainModule?.path;
@@ -77,7 +79,10 @@ export class NestAppStack extends Stack {
       code: Code.fromAsset(this.distPath),
       handler: "main.handler",
       memorySize: 512,
-      environment: this.env,
+      environment: {
+        stage: this.props.stage,
+        ...this.env,
+      },
     });
   }
 
@@ -139,8 +144,13 @@ export class NestAppStack extends Stack {
       const auth = authMap[methodName];
 
       if (auth) {
-        methodOptions.authorizer = { authorizerId: auth.ref };
-        methodOptions.authorizationType = AuthorizationType.COGNITO;
+        const cnf = auth as CfnAuthorizer;
+        const request = auth as RequestAuthorizer;
+        methodOptions.authorizer = cnf?.ref
+          ? { authorizerId: cnf.ref }
+          : request;
+        methodOptions.authorizationType =
+          AuthorizationType[cnf?.ref ? "COGNITO" : "CUSTOM"];
       }
 
       if (bodyValidator) {

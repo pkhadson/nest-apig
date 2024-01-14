@@ -3,6 +3,10 @@ import { Stack } from "aws-cdk-lib";
 import {
   CfnAuthorizer,
   CfnAuthorizerProps,
+  CorsOptions,
+  IAuthorizer,
+  RequestAuthorizer,
+  RequestAuthorizerProps,
   RestApi,
 } from "aws-cdk-lib/aws-apigateway";
 import { Construct } from "constructs";
@@ -11,21 +15,29 @@ import * as path from "node:path";
 import { NestAppStack } from "./nest.stack";
 export * from "./nest.stack";
 import titleCase from "./utils/title-case.util";
+import { Code, Function, Runtime } from "aws-cdk-lib/aws-lambda";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 
 interface INestCdkConfig {
   app: any;
+  stage: string;
   restApi?: false | RestApi;
   name?: string;
   props?: StackProps;
   rootPath?: string;
   plugins?: any[];
   env?: any;
-  authorizers?: Record<string, Exclude<CfnAuthorizerProps, "restApiId">>;
+  authorizers?: Record<
+    string,
+    | Exclude<CfnAuthorizerProps, "restApiId">
+    | ((stack: NestCdkStack) => IAuthorizer)
+  >;
+  cors?: string[];
 }
 
 export class NestCdkStack extends Stack {
   api?: RestApi;
-  authorizers: Record<string, CfnAuthorizer> = {};
+  authorizers: Record<string, RequestAuthorizer | CfnAuthorizer> = {};
   constructor(scope: Construct, id: string, private props: INestCdkConfig) {
     super(scope, id, props.props);
 
@@ -42,7 +54,19 @@ export class NestCdkStack extends Stack {
     if (this.api) return this.api;
     if (this.props.restApi === false) return;
     if (this.props.restApi) return this.props.restApi!;
-    this.api = new RestApi(this, "Api");
+    this.api = new RestApi(this, "Api", {
+      defaultCorsPreflightOptions: {
+        allowHeaders: [
+          "Content-Type",
+          "X-Amz-Date",
+          "Authorization",
+          "X-Api-Key",
+        ],
+        allowMethods: ["OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"],
+        allowCredentials: true,
+        allowOrigins: this.props.cors || ["*"],
+      },
+    });
     return this.api!;
   }
 
@@ -53,9 +77,18 @@ export class NestCdkStack extends Stack {
 
     const api = this.getApi();
     if (!api) throw new Error("No api found");
+    if (typeof this.props.authorizers![name] === "function") {
+      const fn = this.props.authorizers![name] as any;
+      const authorizer = fn(this);
+
+      this.authorizers[name] = authorizer;
+      return authorizer;
+    }
+
+    const props = this.props.authorizers![name] as any;
 
     const authorizer = new CfnAuthorizer(this, name, {
-      ...this.props.authorizers![name],
+      ...props,
       restApiId: api.restApiId,
     });
     this.authorizers[name] = authorizer;
@@ -96,6 +129,7 @@ export class NestCdkStack extends Stack {
             distPath: path.join(rootPath, "dist/apps", project),
             env: this.props.env,
             authorizers: this.authorizers,
+            stage: this.props.stage,
           })
         );
       }
@@ -107,6 +141,7 @@ export class NestCdkStack extends Stack {
           distPath: path.join(rootPath, "dist"),
           env: this.props.env,
           authorizers: this.authorizers,
+          stage: this.props.stage,
         })
       );
     }
@@ -117,7 +152,17 @@ export class NestCdkStack extends Stack {
       });
     });
 
-    return stacks;
+    const map = new Map<string, NestAppStack>();
+    if (build.isMonorepo) {
+      for (const stack of stacks) {
+        const project = stack.projectName;
+        map.set(project, stack);
+      }
+    } else {
+      map.set("default", stacks[0]!);
+    }
+
+    return map;
   }
 }
 

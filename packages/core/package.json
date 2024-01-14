@@ -1,6 +1,6 @@
 {
   "name": "@nest-cdk/core",
-  "version": "0.0.2-rc.20",
+  "version": "0.0.2-rc.29",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -32,7 +32,8 @@
     }
   },
   "dependencies": {
-    "@nest-cdk/build": "0.0.0-rc.1",
+    "@nest-cdk/build": "0.0.0-rc.6",
+    "@nestjs/common": "*",
     "@nestjs/platform-express": "^10.2.10",
     "@nestjs/swagger": "^7.1.12",
     "@vendia/serverless-express": "^4.10.4",
