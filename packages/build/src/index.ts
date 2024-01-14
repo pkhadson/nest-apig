@@ -1,10 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { exec as _exec } from "node:child_process";
+import { execSync } from "node:child_process";
 import shell from "shelljs";
-import { promisify } from "node:util";
-
-const exec = promisify(_exec);
 
 interface IBuild {
   path: string;
@@ -23,8 +20,9 @@ export class Build {
     else projects = this.build();
 
     for (let i = 0; i < projects.length; i++) {
-      const { build } = projects[i];
-      const a = await exec(build, { cwd: this.opts.path });
+      const { build, generate } = projects[i];
+      execSync(build, { cwd: this.opts.path, stdio: "inherit" });
+      execSync(generate, { cwd: this.opts.path, stdio: "inherit" });
     }
   }
 
@@ -45,13 +43,19 @@ export class Build {
   }
 
   get projectNames() {
-    return this.isMonorepo ? Object.keys(this.getNestConfig().projects) : [];
+    const { projects } = this.getNestConfig();
+    if (!projects) return [];
+    const apps = Object.entries(projects).filter(
+      (a: [string, any]) => a[1].type === "application"
+    );
+
+    return this.isMonorepo ? apps.map((a: any) => a[0]) : [];
   }
 
   build(project: string = "") {
     const command = {
       build: `nest build${project ? ` ${project}` : ""} --webpack`,
-      generate: `GENERATE=true node dist/apps/${project || "."}/main.js`,
+      generate: `GENERATE=true node dist/apps/${project || ".."}/main.js`,
     };
     return [command];
   }

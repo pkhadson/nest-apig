@@ -1,6 +1,6 @@
 {
   "name": "@nest-cdk/build",
-  "version": "0.0.0-rc.2",
+  "version": "0.0.0-rc.6",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,7 +27,7 @@
     "@aws-cdk/aws-apigatewayv2-alpha": "2.114.1-alpha.0",
     "@aws-cdk/aws-apigatewayv2-integrations-alpha": "2.114.1-alpha.0",
     "@nestjs/common": "^10.2.6",
-    "aws-cdk-lib": "^2.99.1"
+    "aws-cdk-lib": "*"
   },
   "dependencies": {
     "@types/shelljs": "^0.8.15",
