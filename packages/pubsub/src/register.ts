@@ -8,11 +8,10 @@ import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 
 const register = (nestStack: any) => {
+  const pubsubFile = path.join(nestStack.distPath, "_generated/pubsub.json");
+  if (!fs.existsSync(pubsubFile)) return;
   const { events, config } = JSON.parse(
-    fs.readFileSync(
-      path.join(nestStack.distPath, "_generated/pubsub.json"),
-      "utf-8"
-    )
+    fs.readFileSync(pubsubFile, "utf-8")
   ) as IPubSub;
 
   if (!config?.snsArn) throw new Error("SNS ARN not found in pubsub config");
