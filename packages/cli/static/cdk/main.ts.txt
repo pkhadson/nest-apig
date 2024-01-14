@@ -6,4 +6,5 @@ const app = new cdk.App();
 defineConfig({
   app,
   name: "{{name}}",
+  stage: "dev",
 });
