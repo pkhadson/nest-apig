@@ -1,6 +1,6 @@
 {
   "name": "@nest-cdk/cli",
-  "version": "0.0.0-rc.9",
+  "version": "0.0.0-rc.10",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

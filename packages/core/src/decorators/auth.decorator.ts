@@ -1,4 +1,6 @@
 import { applyDecorators } from "@nestjs/common";
+import { createParamDecorator, ExecutionContext } from "@nestjs/common";
+import getClaimsFromRequest from "../utils/get-clains-from-jwt.util";
 
 const OriginalAuth =
   (authenticatorName: string): MethodDecorator =>
@@ -14,3 +16,10 @@ export const Auth = (authenticatorName: string) => {
 
   return applyDecorators(...decorators);
 };
+
+export const UserData = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    return getClaimsFromRequest(request);
+  }
+);

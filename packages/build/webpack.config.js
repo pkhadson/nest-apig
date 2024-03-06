@@ -7,13 +7,22 @@ module.exports = (options, webpack) => {
     "@nestjs/microservices",
     "@nestjs/microservices/microservices-module",
     "@nestjs/websockets/socket-module",
-    "class-validator",
-    "class-transformer",
-    "class-transformer/storage",
+    // 'class-validator',
+    // 'class-transformer',
+    // 'class-transformer/storage',
   ];
 
   return {
     ...options,
+    resolve: {
+      ...options.resolve,
+      alias: {
+        ...options.resolve.alias,
+        "class-transformer/storage": require.resolve(
+          "class-transformer/cjs/storage"
+        ),
+      },
+    },
     externals: [
       "@aws-sdk/client-sns",
       "@nestjs/microservices",

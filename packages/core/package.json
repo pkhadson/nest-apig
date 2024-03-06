@@ -1,6 +1,6 @@
 {
   "name": "@nest-cdk/core",
-  "version": "0.0.2-rc.29",
+  "version": "0.0.3-rc.4",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -32,7 +32,7 @@
     }
   },
   "dependencies": {
-    "@nest-cdk/build": "0.0.0-rc.6",
+    "@nest-cdk/build": "0.0.0-rc.8",
     "@nestjs/common": "*",
     "@nestjs/platform-express": "^10.2.10",
     "@nestjs/swagger": "^7.1.12",
